@@ -2,14 +2,25 @@ from collections import defaultdict
 from itertools import chain
 import os
 
-from .utils import listdir_abs, dynamic_import
+from .utils import listdir_abs, dynamic_import, open_in
 
 
 class ExperimentsRunner:
-    def __init__(self, experiments_paths) -> None:
+    def __init__(self, experiments_paths, results_folder) -> None:
         self.experiments_paths = experiments_paths
         self.experiments = self.parse_experiments()
         self.resolve_experiments_dependencies()
+
+        self.results_folder = results_folder
+        if not os.path.exists(results_folder):
+            os.mkdir(results_folder)
+
+        self.experiment_keywords = [
+            "extends",
+            "experiment_function",
+            "evaluators",
+            "abstract",
+        ]
 
     def check_unique_experiments(self, experiments_list):
         names = set()
@@ -69,5 +80,30 @@ class ExperimentsRunner:
                 self.experiments[curr].update(self.experiments[parent])
             stack += children[curr]
 
+    def get_kwargs(self, params_dict):
+        kwargs = {
+            key: val
+            for key, val in params_dict.items()
+            if key not in self.experiment_keywords
+        }
+        return kwargs
+
     def run(self):
-        pass
+        for name, params in self.experiments.items():
+            if not params.get("abstract", False):
+                print(f"Running experiment '{name}'")
+                experiment_path = os.path.join(self.results_folder, name)
+                if os.path.exists(experiment_path):
+                    print(
+                        f"Skipping experiment '{name}', results folder already exists."
+                    )
+                else:
+                    new_open = open_in(experiment_path)
+                    kwargs = self.get_kwargs(params)
+                    result = params["experiment_function"](open=new_open, **kwargs)
+                    for evaluator in params["evaluators"]:
+                        print(f"Running evaluator '{evaluator.__name__}'")
+                        evaluator(result)
+            else:
+                print(f"Skipping abstract experiment '{name}'")
+            print()
