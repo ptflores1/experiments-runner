@@ -1,21 +1,31 @@
 from collections import defaultdict
 from itertools import chain
 import os
+from typing import List, Literal, Union
 
 from .utils import WorkingDirectory, listdir_abs, dynamic_import
 
+EXPERIMENTS_TO_RUN_TYPES = Union[List[str], Literal["all", "new"]]
+
 
 class ExperimentsRunner:
-    def __init__(self, experiments_paths, results_folder) -> None:
+    def __init__(
+        self,
+        experiments_paths: str,
+        results_folder: str,
+        experiments_to_run: EXPERIMENTS_TO_RUN_TYPES = "new",
+    ) -> None:
         self.experiments_paths = experiments_paths
         self.experiments = self.parse_experiments()
         self.resolve_experiments_dependencies()
+
+        self.experiments_to_run = experiments_to_run
 
         self.results_folder = results_folder
         if not os.path.exists(results_folder):
             os.mkdir(results_folder)
 
-        self.experiment_keywords = [
+        self.experiment_reserved_words = [
             "extends",
             "experiment_function",
             "evaluators",
@@ -84,7 +94,7 @@ class ExperimentsRunner:
         kwargs = {
             key: val
             for key, val in params_dict.items()
-            if key not in self.experiment_keywords
+            if key not in self.experiment_reserved_words
         }
         return kwargs
 
