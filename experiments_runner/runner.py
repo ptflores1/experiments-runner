@@ -11,6 +11,23 @@ class ExperimentsRunner:
         self.experiments = self.parse_experiments()
         self.resolve_experiments_dependencies()
 
+    def check_unique_experiments(self, experiments_list):
+        names = set()
+        for exp_name in chain.from_iterable(experiments_list):
+            # Check unique names
+            if exp_name in names:
+                raise Exception(f"Experiment name '{exp_name}' is not unique.")
+
+    def validate_experiments(self, experiments):
+        # Check required fields
+        required_fields = ["experiment_function"]
+        for name, exp in experiments.items():
+            for field in required_fields:
+                if field not in exp:
+                    raise Exception(
+                        f"Required field '{field}' not found in experiment '{name}'"
+                    )
+
     def parse_experiments(self):
         paths = self.experiments_paths
         if not isinstance(self.experiments_paths, list):
@@ -29,14 +46,13 @@ class ExperimentsRunner:
         for path in paths:
             experiments_list.append(dynamic_import(path).experiments)
 
-        names = set()
-        for exp_name in chain.from_iterable(experiments_list):
-            if exp_name in names:
-                raise Exception(f"Experiment name '{exp_name}' is not unique.")
+        self.check_unique_experiments(experiments_list)
 
         experiments = {}
         for exps in experiments_list:
             experiments.update(exps)
+
+        self.validate_experiments(experiments)
         return experiments
 
     def resolve_experiments_dependencies(self):
