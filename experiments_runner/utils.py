@@ -13,8 +13,13 @@ def dynamic_import(path):
     return file
 
 
-def open_in(base_path):
-    def new_open(path, *args, **kwargs):
-        return open(os.path.join(base_path, path), *args, **kwargs)
+class WorkingDirectory:
+    def __init__(self, path) -> None:
+        self.path = path
+        self.cwd = os.getcwd()
 
-    return new_open
+    def __enter__(self):
+        os.chdir(self.path)
+
+    def __exit__(self, type, value, traceback):
+        os.chdir(self.cwd)

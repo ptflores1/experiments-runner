@@ -2,7 +2,7 @@ from collections import defaultdict
 from itertools import chain
 import os
 
-from .utils import listdir_abs, dynamic_import, open_in
+from .utils import WorkingDirectory, listdir_abs, dynamic_import
 
 
 class ExperimentsRunner:
@@ -91,19 +91,24 @@ class ExperimentsRunner:
     def run(self):
         for name, params in self.experiments.items():
             if not params.get("abstract", False):
-                print(f"Running experiment '{name}'")
                 experiment_path = os.path.join(self.results_folder, name)
-                if os.path.exists(experiment_path):
+                exp_exists = os.path.exists(experiment_path)
+                if exp_exists and self.experiments_to_run == "new":
                     print(
                         f"Skipping experiment '{name}', results folder already exists."
                     )
                 else:
-                    new_open = open_in(experiment_path)
+                    print(f"Running experiment '{name}'")
+
+                    os.mkdir(experiment_path)
                     kwargs = self.get_kwargs(params)
-                    result = params["experiment_function"](open=new_open, **kwargs)
-                    for evaluator in params["evaluators"]:
-                        print(f"Running evaluator '{evaluator.__name__}'")
-                        evaluator(result)
+
+                    with WorkingDirectory(experiment_path):
+                        result = params["experiment_function"](**kwargs)
+
+                        for evaluator in params["evaluators"]:
+                            print(f"Running evaluator '{evaluator.__name__}'")
+                            evaluator(result)
             else:
                 print(f"Skipping abstract experiment '{name}'")
             print()
