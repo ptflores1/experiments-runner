@@ -11,3 +11,10 @@ def listdir_abs(folder):
 def dynamic_import(path):
     file = SourceFileLoader("tmp", path).load_module()
     return file
+
+
+def open_in(base_path):
+    def new_open(path, *args, **kwargs):
+        return open(os.path.join(base_path, path), *args, **kwargs)
+
+    return new_open
