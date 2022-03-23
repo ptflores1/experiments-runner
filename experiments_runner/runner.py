@@ -9,6 +9,7 @@ class ExperimentsRunner:
     def __init__(self, experiments_paths) -> None:
         self.experiments_paths = experiments_paths
         self.experiments = self.parse_experiments()
+        self.resolve_experiments_dependencies()
 
     def parse_experiments(self):
         paths = self.experiments_paths
