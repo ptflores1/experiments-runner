@@ -1,6 +1,7 @@
 from collections import defaultdict
 from itertools import chain
 import os
+import shutil
 from typing import List, Literal, Union
 
 from .utils import WorkingDirectory, listdir_abs, dynamic_import
@@ -99,7 +100,15 @@ class ExperimentsRunner:
         return kwargs
 
     def run(self):
-        for name, params in self.experiments.items():
+        to_run = self.experiments.items()
+        if isinstance(self.experiments_to_run, list):
+            to_run = filter(lambda x: x[0] in self.experiments_to_run, to_run)
+
+        should_overwrite = self.experiments_to_run == "all" or isinstance(
+            self.experiments_to_run, list
+        )
+
+        for name, params in to_run:
             if not params.get("abstract", False):
                 experiment_path = os.path.join(self.results_folder, name)
                 exp_exists = os.path.exists(experiment_path)
@@ -109,6 +118,9 @@ class ExperimentsRunner:
                     )
                 else:
                     print(f"Running experiment '{name}'")
+                    if should_overwrite and exp_exists:
+                        print(f"Overwriting existing folder for experiment '{name}'")
+                        shutil.rmtree(experiment_path)
 
                     os.mkdir(experiment_path)
                     kwargs = self.get_kwargs(params)
