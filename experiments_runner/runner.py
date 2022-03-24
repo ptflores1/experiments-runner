@@ -124,13 +124,17 @@ class ExperimentsRunner:
 
                     os.mkdir(experiment_path)
                     kwargs = self.get_kwargs(params)
+                    try:
+                        with WorkingDirectory(experiment_path):
+                            result = params["experiment_function"](**kwargs)
 
-                    with WorkingDirectory(experiment_path):
-                        result = params["experiment_function"](**kwargs)
-
-                        for evaluator in params["evaluators"]:
-                            print(f"Running evaluator '{evaluator.__name__}'")
-                            evaluator(result)
+                            for evaluator in params["evaluators"]:
+                                print(f"Running evaluator '{evaluator.__name__}'")
+                                evaluator(result)
+                    except Exception as e:
+                        print(
+                            f"Experiment '{name}' raised the exception: '{type(e).__name__}: {e}'"
+                        )
             else:
                 print(f"Skipping abstract experiment '{name}'")
             print()
