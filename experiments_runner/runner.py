@@ -1,6 +1,7 @@
 import os
 import inspect
 import shutil
+import traceback
 from collections import defaultdict
 from itertools import chain
 from typing import List, Literal, Union
@@ -146,8 +147,9 @@ class ExperimentsRunner:
                                     evaluator(result)
                     except Exception as e:
                         print(
-                            f"Experiment '{name}' raised the exception: '{type(e).__name__}: {e}'."
+                            f"Experiment '{name}' raised the exception: '{type(e).__name__}: {e}'. Printing stack trace:"
                         )
+                        print(traceback.format_exc())
             else:
                 print(f"Skipping abstract experiment '{name}'.")
             print("#" * 50)
