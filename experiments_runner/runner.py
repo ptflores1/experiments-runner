@@ -17,22 +17,25 @@ class ExperimentsRunner:
         results_folder: str,
         experiments_to_run: EXPERIMENTS_TO_RUN_TYPES = "new",
     ) -> None:
-        self.experiments_paths = experiments_paths
-        self.experiments = self.parse_experiments()
-        self.resolve_experiments_dependencies()
-
-        self.experiments_to_run = experiments_to_run
-
-        self.results_folder = results_folder
-        if not os.path.exists(results_folder):
-            os.mkdir(results_folder)
-
         self.experiment_reserved_words = [
             "extends",
             "executor",
             "evaluators",
             "abstract",
         ]
+        self.non_inheritable_fields = ["abstract"]
+        self.required_fields = ["executor"]
+
+        self.experiments_paths = experiments_paths
+        self.experiments = self.parse_experiments()
+        self.resolve_experiments_dependencies()
+        self.validate_experiments(self.experiments)
+
+        self.experiments_to_run = experiments_to_run
+
+        self.results_folder = results_folder
+        if not os.path.exists(results_folder):
+            os.mkdir(results_folder)
 
     def check_unique_experiments(self, experiments_list):
         names = set()
@@ -43,9 +46,8 @@ class ExperimentsRunner:
 
     def validate_experiments(self, experiments):
         # Check required fields
-        required_fields = ["executor"]
         for name, exp in experiments.items():
-            for field in required_fields:
+            for field in self.required_fields:
                 if field not in exp:
                     raise Exception(
                         f"Required field '{field}' not found in experiment '{name}'."
@@ -75,7 +77,6 @@ class ExperimentsRunner:
         for exps in experiments_list:
             experiments.update(exps)
 
-        self.validate_experiments(experiments)
         return experiments
 
     def resolve_experiments_dependencies(self):
@@ -89,7 +90,12 @@ class ExperimentsRunner:
             curr = stack.pop()
             if "extends" in self.experiments[curr]:
                 parent = self.experiments[curr]["extends"]
-                self.experiments[curr].update(self.experiments[parent])
+                inherited_fields = {
+                    k: v
+                    for k, v in self.experiments[parent].items()
+                    if k not in self.non_inheritable_fields
+                }
+                self.experiments[curr].update(inherited_fields)
             stack += children[curr]
 
     def get_kwargs(self, params_dict):
