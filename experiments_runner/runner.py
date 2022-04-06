@@ -96,7 +96,8 @@ class ExperimentsRunner:
                     for k, v in self.experiments[parent].items()
                     if k not in self.non_inheritable_fields
                 }
-                self.experiments[curr].update(inherited_fields)
+                inherited_fields.update(self.experiments[curr])
+                self.experiments[curr] = inherited_fields
             stack += children[curr]
 
     def get_kwargs(self, params_dict):
