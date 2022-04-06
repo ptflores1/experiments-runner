@@ -47,7 +47,7 @@ class ExperimentsRunner:
             for field in required_fields:
                 if field not in exp:
                     raise Exception(
-                        f"Required field '{field}' not found in experiment '{name}'"
+                        f"Required field '{field}' not found in experiment '{name}'."
                     )
 
     def parse_experiments(self):
@@ -55,7 +55,7 @@ class ExperimentsRunner:
         if not isinstance(self.experiments_paths, list):
             if not os.path.isdir(self.experiments_paths):
                 raise Exception(
-                    f"experiments_paths should be list of files or a directory instead found {self.experiments_paths}"
+                    f"experiments_paths should be list of files or a directory instead found {self.experiments_paths}."
                 )
             else:
                 paths = list(
@@ -117,9 +117,9 @@ class ExperimentsRunner:
                         f"Skipping experiment '{name}', results folder already exists."
                     )
                 else:
-                    print(f"Running experiment '{name}'")
+                    print(f"Running experiment '{name}'.")
                     if should_overwrite and exp_exists:
-                        print(f"Overwriting existing folder for experiment '{name}'")
+                        print(f"Overwriting existing folder for experiment '{name}'.")
                         shutil.rmtree(experiment_path)
 
                     os.mkdir(experiment_path)
@@ -129,12 +129,12 @@ class ExperimentsRunner:
                             result = params["experiment_function"](**kwargs)
 
                             for evaluator in params["evaluators"]:
-                                print(f"Running evaluator '{evaluator.__name__}'")
+                                print(f"Running evaluator '{evaluator.__name__}'.")
                                 evaluator(result)
                     except Exception as e:
                         print(
-                            f"Experiment '{name}' raised the exception: '{type(e).__name__}: {e}'"
+                            f"Experiment '{name}' raised the exception: '{type(e).__name__}: {e}'."
                         )
             else:
-                print(f"Skipping abstract experiment '{name}'")
-            print()
+                print(f"Skipping abstract experiment '{name}'.")
+            print("#" * 50)

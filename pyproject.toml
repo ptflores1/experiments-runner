@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "expermiments-runner"
+name = "experiments_runner"
 version = "0.1.0"
 description = ""
 authors = ["ptflores1 <ptflores1@uc.cl>"]
