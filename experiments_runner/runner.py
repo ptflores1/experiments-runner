@@ -1,7 +1,8 @@
+import os
+import inspect
+import shutil
 from collections import defaultdict
 from itertools import chain
-import os
-import shutil
 from typing import List, Literal, Union
 
 from .utils import WorkingDirectory, listdir_abs, dynamic_import
@@ -130,7 +131,13 @@ class ExperimentsRunner:
 
                             for evaluator in params["evaluators"]:
                                 print(f"Running evaluator '{evaluator.__name__}'.")
-                                evaluator(result)
+                                if (
+                                    "executor_args"
+                                    in inspect.getfullargspec(evaluator).args
+                                ):
+                                    evaluator(result, executor_args=kwargs)
+                                else:
+                                    evaluator(result)
                     except Exception as e:
                         print(
                             f"Experiment '{name}' raised the exception: '{type(e).__name__}: {e}'."
