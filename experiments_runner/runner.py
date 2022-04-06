@@ -28,7 +28,7 @@ class ExperimentsRunner:
 
         self.experiment_reserved_words = [
             "extends",
-            "experiment_function",
+            "executor",
             "evaluators",
             "abstract",
         ]
@@ -42,7 +42,7 @@ class ExperimentsRunner:
 
     def validate_experiments(self, experiments):
         # Check required fields
-        required_fields = ["experiment_function"]
+        required_fields = ["executor"]
         for name, exp in experiments.items():
             for field in required_fields:
                 if field not in exp:
@@ -126,7 +126,7 @@ class ExperimentsRunner:
                     kwargs = self.get_kwargs(params)
                     try:
                         with WorkingDirectory(experiment_path):
-                            result = params["experiment_function"](**kwargs)
+                            result = params["executor"](**kwargs)
 
                             for evaluator in params["evaluators"]:
                                 print(f"Running evaluator '{evaluator.__name__}'.")
