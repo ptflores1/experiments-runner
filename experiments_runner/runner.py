@@ -116,7 +116,10 @@ class ExperimentsRunner:
         should_overwrite = self.experiments_to_run == "all" or isinstance(
             self.experiments_to_run, list
         )
-
+        print("Loaded experiments:")
+        for name, _ in to_run:
+            print(f"    - {name}")
+        print()
         for name, params in to_run:
             if not params.get("abstract", False):
                 experiment_path = os.path.join(self.results_folder, name)
