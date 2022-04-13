@@ -9,6 +9,6 @@ experiments_path = os.path.join(current_folder, "experiments")
 runner = ExperimentsRunner(
     experiments_paths=experiments_path,
     results_folder=results_folder,
-    experiments_to_run="all",
+    mode="all",
 )
 runner.run()
