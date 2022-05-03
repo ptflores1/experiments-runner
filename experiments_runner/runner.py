@@ -24,6 +24,9 @@ class ExperimentsRunner:
         if not os.path.exists(results_folder):
             os.mkdir(results_folder)
 
+    def filter_kwargs(self, kwargs, targets):
+        return {target: kwargs.get(target) for target in targets}
+
     def run(self):
         to_run = self.experiments_loader.experiments.items()
         if isinstance(self.mode, list):
@@ -50,7 +53,9 @@ class ExperimentsRunner:
                     kwargs = self.experiments_loader.get_kwargs(params)
                     try:
                         with WorkingDirectory(experiment_path):
-                            result = params["executor"](**kwargs)
+                            executor_args = inspect.getfullargspec(params["executor"]).args
+                            filtered_kwargs = self.filter_kwargs(kwargs, executor_args)
+                            result = params["executor"](**filtered_kwargs)
 
                             for evaluator in params["evaluators"]:
                                 print(f"Running evaluator '{evaluator.__name__}'.")
