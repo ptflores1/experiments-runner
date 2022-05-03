@@ -31,9 +31,10 @@ class ExperimentsLoader:
     def validate_experiments(self):
         # Check required fields
         for name, exp in self.experiments.items():
-            for field in self.required_fields:
-                if field not in exp:
-                    raise Exception(f"Required field '{field}' not found in experiment '{name}'.")
+            if not exp.get("abstract", False):
+                for field in self.required_fields:
+                    if field not in exp:
+                        raise Exception(f"Required field '{field}' not found in experiment '{name}'.")
 
     def parse_experiments(self):
         paths = self.experiments_paths
