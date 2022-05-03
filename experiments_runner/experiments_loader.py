@@ -62,15 +62,20 @@ class ExperimentsLoader:
         children = defaultdict(list)
         for key, val in self.experiments.items():
             if "extends" in val:
-                children[val["extends"]].append(key)
+                parents = val["extends"] if isinstance(val["extends"], list) else [val["extends"]]
+                for parent_name in parents:
+                    children[parent_name].append(key)
 
         stack = [key for key, val in self.experiments.items() if "extends" not in val]
         while len(stack):
             curr = stack.pop()
             if "extends" in self.experiments[curr]:
-                parent = self.experiments[curr]["extends"]
+                parents = self.experiments[curr]["extends"]
                 inherited_fields = {
-                    k: v for k, v in self.experiments[parent].items() if k not in self.non_inheritable_fields
+                    k: v
+                    for parent in parents
+                    for k, v in self.experiments[parent].items()
+                    if k not in self.non_inheritable_fields
                 }
                 inherited_fields.update(self.experiments[curr])
                 self.experiments[curr] = inherited_fields
