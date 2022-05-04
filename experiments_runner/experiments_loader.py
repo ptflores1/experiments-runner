@@ -70,7 +70,7 @@ class ExperimentsLoader:
         while len(stack):
             curr = stack.pop()
             if "extends" in self.experiments[curr]:
-                parents = self.experiments[curr]["extends"]
+                parents = self.experiments[curr]["extends"] if isinstance(self.experiments[curr]["extends"], list) else [self.experiments[curr]["extends"]]
                 inherited_fields = {
                     k: v
                     for parent in parents
