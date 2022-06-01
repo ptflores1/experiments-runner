@@ -70,7 +70,11 @@ class ExperimentsLoader:
         while len(stack):
             curr = stack.pop()
             if "extends" in self.experiments[curr]:
-                parents = self.experiments[curr]["extends"] if isinstance(self.experiments[curr]["extends"], list) else [self.experiments[curr]["extends"]]
+                parents = (
+                    self.experiments[curr]["extends"]
+                    if isinstance(self.experiments[curr]["extends"], list)
+                    else [self.experiments[curr]["extends"]]
+                )
                 inherited_fields = {
                     k: v
                     for parent in parents
@@ -81,8 +85,10 @@ class ExperimentsLoader:
                 self.experiments[curr] = inherited_fields
             stack += children[curr]
 
-    def get_kwargs(self, params_dict):
+    def get_kwargs(self, params_dict, overwrite_kwargs=None):
         kwargs = {key: val for key, val in params_dict.items() if key not in self.experiment_reserved_words}
+        if overwrite_kwargs is not None:
+            kwargs.update(overwrite_kwargs)
         return kwargs
 
     def get_experiment_args(self, experiment_name: str):
