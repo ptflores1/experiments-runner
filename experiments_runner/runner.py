@@ -14,34 +14,35 @@ class ExperimentsRunner:
     def __init__(
         self,
         experiments_paths: str,
-        results_folder: str,
-        mode: MODE_TYPES = "new",
     ) -> None:
         self.experiments_loader = ExperimentsLoader(experiments_paths)
-        self.mode = mode
-
-        self.results_folder = results_folder
-        if not os.path.exists(results_folder):
-            os.mkdir(results_folder)
 
     def filter_kwargs(self, kwargs, targets):
         return {target: kwargs.get(target) for target in targets}
 
-    def run(self):
-        to_run = self.experiments_loader.experiments.items()
-        if isinstance(self.mode, list):
-            to_run = filter(lambda x: x[0] in self.mode, to_run)
+    def run(
+        self,
+        results_folder: str,
+        overwrite_kwargs: dict = None,
+        mode: MODE_TYPES = "new",
+    ):
+        if not os.path.exists(results_folder):
+            os.mkdir(results_folder)
 
-        should_overwrite = self.mode == "all" or isinstance(self.mode, list)
+        to_run = self.experiments_loader.experiments.items()
+        if isinstance(mode, list):
+            to_run = filter(lambda x: x[0] in mode, to_run)
+
+        should_overwrite = mode == "all" or isinstance(mode, list)
         print("Loaded experiments:")
         for name, _ in to_run:
             print(f"    - {name}")
         print()
         for name, params in to_run:
             if not params.get("abstract", False):
-                experiment_path = os.path.join(self.results_folder, name)
+                experiment_path = os.path.join(results_folder, name)
                 exp_exists = os.path.exists(experiment_path)
-                if exp_exists and self.mode == "new":
+                if exp_exists and mode == "new":
                     print(f"Skipping experiment '{name}', results folder already exists.")
                 else:
                     print(f"Running experiment '{name}'.")
@@ -50,7 +51,7 @@ class ExperimentsRunner:
                         shutil.rmtree(experiment_path)
 
                     os.mkdir(experiment_path)
-                    kwargs = self.experiments_loader.get_kwargs(params)
+                    kwargs = self.experiments_loader.get_kwargs(params, overwrite_kwargs)
                     try:
                         with WorkingDirectory(experiment_path):
                             executor_args = inspect.getfullargspec(params["executor"]).args
